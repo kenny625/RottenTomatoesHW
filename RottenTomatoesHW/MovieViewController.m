@@ -15,6 +15,7 @@
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (strong, nonatomic) NSArray *movies;
+@property (strong, nonatomic) UIRefreshControl *refreshControl;
 @end
 
 CGRect originalHeightFrame;
@@ -24,15 +25,28 @@ CGRect originalHeightFrame;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [self.networkErrView setHidden:YES];
+    self.refreshControl = [[UIRefreshControl alloc] init];
+    self.refreshControl.backgroundColor = [UIColor purpleColor];
+    self.refreshControl.tintColor = [UIColor whiteColor];
+    [self.refreshControl addTarget:self
+                            action:@selector(refreshData)
+                  forControlEvents:UIControlEventValueChanged];
+    [self.tableView addSubview:self.refreshControl];
     
     originalHeightFrame = self.networkErrView.frame;
     
+    self.tableView.dataSource = self;
+    self.tableView.delegate = self;
+    
+    [self refreshData];
+}
+
+- (void)refreshData {
+    [self.networkErrView setHidden:YES];
     CGRect zeroHeightFrame = self.networkErrView.frame;
     zeroHeightFrame.size.height = 0;
     [self.networkErrView setFrame:zeroHeightFrame];
-    self.tableView.dataSource = self;
-    self.tableView.delegate = self;
+    
     
     NSString *urlString = @"http://api.rottentomatoes.com/api/public/v1.0/lists/movies/upcoming.json?apikey=dagqdghwaq3e3mxyrp7kmmj5&page_limit=20";
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
@@ -41,6 +55,7 @@ CGRect originalHeightFrame;
             NSDictionary *dict =[NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
             self.movies = dict[@"movies"];
             [self.tableView reloadData];
+            [self.refreshControl endRefreshing];
         }
         
         if (connectionError != nil) {
@@ -48,10 +63,11 @@ CGRect originalHeightFrame;
                 [self.networkErrView setFrame:originalHeightFrame];
                 [self.networkErrView setHidden:NO];
             } completion:^(BOOL finished) {
-                
+                [self.refreshControl endRefreshing];
             }];
         }
     }];
+    
 }
 
 - (void)didReceiveMemoryWarning {
