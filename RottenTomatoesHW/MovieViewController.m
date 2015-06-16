@@ -17,20 +17,40 @@
 @property (strong, nonatomic) NSArray *movies;
 @end
 
+CGRect originalHeightFrame;
+
 @implementation MovieViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    [self.networkErrView setHidden:YES];
+    
+    originalHeightFrame = self.networkErrView.frame;
+    
+    CGRect zeroHeightFrame = self.networkErrView.frame;
+    zeroHeightFrame.size.height = 0;
+    [self.networkErrView setFrame:zeroHeightFrame];
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
     
     NSString *urlString = @"http://api.rottentomatoes.com/api/public/v1.0/lists/movies/upcoming.json?apikey=dagqdghwaq3e3mxyrp7kmmj5&page_limit=20";
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        NSDictionary *dict =[NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        self.movies = dict[@"movies"];
-        [self.tableView reloadData];
+        if (data != nil) {
+            NSDictionary *dict =[NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            self.movies = dict[@"movies"];
+            [self.tableView reloadData];
+        }
+        
+        if (connectionError != nil) {
+            [UIView animateWithDuration:1 animations:^{
+                [self.networkErrView setFrame:originalHeightFrame];
+                [self.networkErrView setHidden:NO];
+            } completion:^(BOOL finished) {
+                
+            }];
+        }
     }];
 }
 

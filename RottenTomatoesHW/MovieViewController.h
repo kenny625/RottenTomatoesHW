@@ -9,5 +9,6 @@
 #import <UIKit/UIKit.h>
 
 @interface MovieViewController : UIViewController
+@property (weak, nonatomic) IBOutlet UIView *networkErrView;
 
 @end
