@@ -46,7 +46,8 @@ CGRect originalHeightFrame;
     CGRect zeroHeightFrame = self.networkErrView.frame;
     zeroHeightFrame.size.height = 0;
     [self.networkErrView setFrame:zeroHeightFrame];
-    
+    self.movies = nil;
+    [self.tableView reloadData];
     
     NSString *urlString = @"http://api.rottentomatoes.com/api/public/v1.0/lists/movies/upcoming.json?apikey=dagqdghwaq3e3mxyrp7kmmj5&page_limit=20";
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
